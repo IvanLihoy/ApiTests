@@ -1,4 +1,5 @@
 
+import org.testng.log4testng.Logger;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.Test;
 
@@ -13,7 +14,7 @@ public class Gmail {
         public static final String mailStoreType = "pop3s";
         public static final String username = "lihoy@singree.com";// change accordingly
         public static final String password = "lihoy92ivan";// change accordingly
-        //private static final Logger log = Logger.getLogger(ActivationUser.class);
+        private static final Logger log = Logger.getLogger(Gmail.class);
 
 
         public static String getActivationLink() throws Exception {
@@ -59,7 +60,8 @@ public class Gmail {
 
         @Test
         public void testGMail() throws Exception {
-            openActivationLink();
+            //openActivationLink();
+            deleteActivationMessage();
 
         }
         public static String getTextFromMessage(Message message) throws Exception {
@@ -91,4 +93,31 @@ public class Gmail {
             }
             return result;
         }
+
+    public void deleteActivationMessage() throws Exception {
+        Properties properties = new Properties();
+        properties.put("mail.pop3.host", host);
+        properties.put("mail.pop3.port", "995");
+        properties.put("mail.pop3.starttls.enable", "true");
+        Session emailSession = Session.getDefaultInstance(properties);
+        Store store = emailSession.getStore(mailStoreType);
+        store.connect(host, username, password);
+        Folder emailFolder = store.getFolder("INBOX");
+        emailFolder.open(Folder.READ_WRITE);
+        Message[] messages = emailFolder.getMessages();
+        int i =0;
+        for (Message message:messages){
+            i++;
+            System.out.println(message.getSubject());
+            if (message.getSubject().contains("Reset password")){
+                message.setFlag(Flags.Flag.DELETED, true);
+                emailFolder.close(true);
+                System.out.println("Message: Registration successfull - WAS DELETED!");
+                log.info("Registration successfull - WAS DELETED!");
+                break;
+            }
+
+        }
+
+    }
 }
